@@ -29,4 +29,26 @@ struct APIClient {
         let dec = JSONDecoder()
         return try dec.decode(CharactersResponse.self, from: data)
     }
+    
+    func fetchLocations(page: Int?, name: String?) async throws -> LocationsResponse {
+        var items: [URLQueryItem] = []
+        if let page = page { items.append(URLQueryItem(name: "page", value: String(page))) }
+        if let name = name, !name.isEmpty {
+            items.append(URLQueryItem(name: "name", value: name)) }
+        
+        let data = try await get("location", query: items.isEmpty ? nil : items)
+        let dec = JSONDecoder()
+        return try dec.decode(LocationsResponse.self, from: data)
+    }
+    
+    func fetchEpisodes(page: Int?, name: String?) async throws -> EpisodesResponse {
+        var items: [URLQueryItem] = []
+        if let page = page { items.append(URLQueryItem(name: "page", value: String(page))) }
+        if let name = name, !name.isEmpty {
+            items.append(URLQueryItem(name: "name", value: name)) }
+        
+        let data = try await get("episode", query: items.isEmpty ? nil : items)
+        let dec = JSONDecoder()
+        return try dec.decode(EpisodesResponse.self, from: data)
+    }
 }
