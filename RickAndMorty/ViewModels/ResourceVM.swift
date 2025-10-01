@@ -48,27 +48,29 @@ final class ResourceVM: ObservableObject {
     
     func firstLoad() async {
         guard case .idle = state else { return }
-        await load(page: 1, name: nil, resource: resource)}
-    
+        startNewLoad(page: 1, name: nil, resource: resource)
+    }
+
     func applySearch() async {
         currentPage = 1
         let name = searchText.isEmpty ? nil : searchText
-        await load(page: currentPage, name: name, resource: resource)
+        startNewLoad(page: currentPage, name: name, resource: resource)
     }
-    
+
     func nextPage() async {
         guard let i = info, i.next != nil else { return }
         currentPage += 1
         let name = searchText.isEmpty ? nil : searchText
-        await load(page: currentPage, name: name, resource: resource)
+        startNewLoad(page: currentPage, name: name, resource: resource)
     }
-    
+
     func prevPage() async {
         guard let i = info, i.prev != nil else { return }
         currentPage = max(1, currentPage - 1)
         let name = searchText.isEmpty ? nil : searchText
-        await load(page: currentPage, name: name, resource: resource)
+        startNewLoad(page: currentPage, name: name, resource: resource)
     }
+
     func load(page: Int?, name: String?, resource: Resource) async {
         if Task.isCancelled { return }
         
@@ -104,4 +106,13 @@ final class ResourceVM: ObservableObject {
             state = .failed(error.localizedDescription)
         }
     }
+    
+    private func startNewLoad(page: Int, name: String?, resource: Resource) {
+        loadTask?.cancel()
+        loadTask = Task { [weak self] in
+            guard let self else { return }
+            await self.load(page: page, name: name, resource: resource)
+        }
+    }
+
 }
